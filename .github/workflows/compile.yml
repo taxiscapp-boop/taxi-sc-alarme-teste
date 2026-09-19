@@ -1,37 +1,37 @@
-name: Gerar APK
+Nome:  Grande APK
 
-on:
-  workflow_dispatch:
+Vamos.:
+  Fluxo de trabalho_dispatch  :
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+Empregos:
+ Construir  :
+  Corrida   :   Ubuntu-último
 
-    steps:
-      - name: Baixar projeto
-        uses: actions/checkout@v4
+  Passos  :
+       -  Nome:  Baixar projeto
+ Usos   :   C.
 
-      - name: Extrair ZIP
-        run: |
-          mkdir projeto
-          unzip -o TAXI_SC_ANDROID_ALARME_REAL.zip -d projeto
+                           :                                                                                                                                                                     :             
+ :c.|     :     :                   
+                         mkdir projeto               
+ unzip -o TAXI_SC_ANDROID_ALARME_V13.zip -d projetoTAXI_SC_ANDROID_ALARME_.zip -d projeto1.zip -d projetoTAXI_SC_ANDROID_ALARME_.zip -d projeto13.zip -d projetoTAXI_SC_ANDROID_ALARME_.zip -d projeto1.zip -d projetoTAXI_SC_ANDROID_ALARME_.zip -d projeto 
 
-      - name: Configurar Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+Eu.
+   :    :                          EUE. Eu.  UE. Eu.   U. UE.  :  Com... ações/setup-java@v4
+ A.        :
+  Distribuição  :   Temurin
+ Java-versão  :   '17'
 
-      - name: Configurar Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
+      - Nome   :     Configurar Gradle
+Configurar Gradle
+  Com...   :     :
+  Versão de Gradle   :  '8.9'  :  '8.9'
 
-      - name: Compilar APK
-        run: gradle -p projeto assembleDebug
+    -    : APK semelhante :  APK semelhante
+  Corra! :  gradle -p projeto assembleDebug :  gradle -p projeto assembleDebug
 
-      - name: Disponibilizar APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: TAXI-SC-TESTE-APK
+    -    : Disponibilizar APK :  APK disponível
+ Usos :  Ações/Upload-Artifact@v4 :  ações/upload-artifact@v4
+ Com...  :    :
+ Nome  : TAXI-SC-TESTE-APK : TAXI-SC-TESTE-APK
           path: projeto/app/build/outputs/apk/debug/app-debug.apk
