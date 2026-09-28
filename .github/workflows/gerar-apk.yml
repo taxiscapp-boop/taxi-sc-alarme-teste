@@ -16,20 +16,37 @@ jobs:
         run: |
           set -e
 
-          rm -rf projeto
-          mkdir -p projeto
+          rm -rf pacote projeto
+          mkdir -p pacote projeto
 
-          unzip -o TAXI_SC_ANDROID_ALARME_V13.zip -d projeto
+          echo "Extraindo pacote principal..."
+          unzip -o TAXI_SC_ANDROID_ALARME_V13.zip -d pacote
+
+          INNER_ZIP="$(find pacote -type f -name 'TAXI_SC_ANDROID_ALARME_V13.zip' | head -n 1)"
+
+          if [ -z "$INNER_ZIP" ]; then
+            echo "ERRO: ZIP interno do projeto não encontrado."
+            find pacote -maxdepth 5 -type f | sort
+            exit 1
+          fi
+
+          echo "ZIP interno encontrado:"
+          echo "$INNER_ZIP"
+
+          echo "Extraindo projeto Android..."
+          unzip -o "$INNER_ZIP" -d projeto
 
           PROJECT_DIR="$(find projeto -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit | xargs -r dirname)"
 
           if [ -z "$PROJECT_DIR" ]; then
-            echo "ERRO: settings.gradle não encontrado."
-            find projeto -maxdepth 5 -type f | sort
+            echo "ERRO: settings.gradle não encontrado no projeto Android."
+            find projeto -maxdepth 6 -type f | sort
             exit 1
           fi
 
-          echo "Projeto encontrado em: $PROJECT_DIR"
+          echo "Projeto Android encontrado em:"
+          echo "$PROJECT_DIR"
+
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Configurar Java
@@ -52,6 +69,7 @@ jobs:
 
           cp "$PROJECT_DIR/app/build/outputs/apk/release/app-release.apk" app-debug.apk
 
+          echo "APK criado:"
           ls -lh app-debug.apk
 
       - name: Disponibilizar APK
