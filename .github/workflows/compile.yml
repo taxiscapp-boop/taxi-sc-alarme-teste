@@ -1,37 +1,61 @@
-Nome:  Grande APK
+name: Gerar APK
 
-Vamos.:
-  Fluxo de trabalho_dispatch  :
+on:
+  workflow_dispatch:
 
-Empregos:
- Construir  :
-  Corrida   :   Ubuntu-último
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-  Passos  :
-       -  Nome:  Baixar projeto
- Usos   :   C.
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
 
-                           :                                                                                                                                                                     :             
- :c.|     :     :                   
-                         mkdir projeto               
- unzip -o TAXI_SC_ANDROID_ALARME_V13.zip -d projeto 
+      - name: Extrair projeto
+        shell: bash
+        run: |
+          set -e
 
-Eu.
-   :    :                          EUE. Eu.  UE. Eu.   U. UE.  :  Com... ações/setup-java@v4
- A.        :
-  Distribuição  :   Temurin
- Java-versão  :   '17'
+          rm -rf projeto
+          mkdir -p projeto
 
-      - Nome   :     Configurar Gradle
-Configurar Gradle
-  Com...   :     :
-  Versão de Gradle   :  '8.9'  :  '8.9'
+          unzip -o TAXI_SC_ANDROID_ALARME_V13.zip -d projeto
 
-    -    : APK semelhante :  APK semelhante
-  Corra! :  gradle -p projeto assembleDebug :  gradle -p projeto assembleDebug
+          PROJECT_DIR="$(find projeto -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit | xargs -r dirname)"
 
-    -    : Disponibilizar APK :  APK disponível
- Usos :  Ações/Upload-Artifact@v4 :  ações/upload-artifact@v4
- Com...  :    :
- Nome  : TAXI-SC-TESTE-APK : TAXI-SC-TESTE-APK
-          path: projeto/app/build/outputs/apk/debug/app-debug.apk
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "ERRO: settings.gradle não encontrado."
+            find projeto -maxdepth 5 -type f | sort
+            exit 1
+          fi
+
+          echo "Projeto encontrado em: $PROJECT_DIR"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Compilar APK assinado
+        shell: bash
+        run: |
+          set -e
+
+          gradle -p "$PROJECT_DIR" --no-daemon assembleRelease
+
+          cp "$PROJECT_DIR/app/build/outputs/apk/release/app-release.apk" app-debug.apk
+
+          ls -lh app-debug.apk
+
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TAXI-SC-TESTE-APK
+          path: app-debug.apk
