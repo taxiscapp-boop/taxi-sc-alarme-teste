@@ -11,10 +11,26 @@ jobs:
       - name: Baixar projeto
         uses: actions/checkout@v4
 
-      - name: Extrair ZIP
+      - name: Extrair projeto
+        shell: bash
         run: |
-          mkdir projeto
+          set -e
+
+          rm -rf projeto
+          mkdir -p projeto
+
           unzip -o TAXI_SC_ANDROID_ALARME_V13.zip -d projeto
+
+          PROJECT_DIR="$(find projeto -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit | xargs -r dirname)"
+
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "ERRO: settings.gradle não encontrado."
+            find projeto -maxdepth 5 -type f | sort
+            exit 1
+          fi
+
+          echo "Projeto encontrado em: $PROJECT_DIR"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Configurar Java
         uses: actions/setup-java@v4
@@ -27,11 +43,19 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Compilar APK
-        run: gradle -p projeto assembleDebug
+      - name: Compilar APK assinado
+        shell: bash
+        run: |
+          set -e
+
+          gradle -p "$PROJECT_DIR" --no-daemon assembleRelease
+
+          cp "$PROJECT_DIR/app/build/outputs/apk/release/app-release.apk" app-debug.apk
+
+          ls -lh app-debug.apk
 
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
         with:
           name: TAXI-SC-TESTE-APK
-          path: projeto/app/build/outputs/apk/debug/app-debug.apk
+          path: app-debug.apk
